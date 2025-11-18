@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,22 +5,18 @@ using UnityEngine.UI;
 public class ButtonHandler : MonoBehaviour
 {
     public Image p1;
-    public Image enemy;
+    public Image Computer;
 
     public Sprite rock;
     public Sprite paper;
     public Sprite scissors;
-
-    Dictionary<string, Sprite> possibleChoice = new Dictionary<string, Sprite>{};
     
-
+    public ComputerAI computerAI;
 
     // Start is called before the first frame update
     void Start()
     {
-        possibleChoice["rock"] = rock;
-        possibleChoice["paper"] = paper;
-        possibleChoice["scissors"] = scissors;
+       
     }
 
     // Update is called once per frame
@@ -32,19 +27,21 @@ public class ButtonHandler : MonoBehaviour
 
     public void rockButtonClick()
     {
-        p1.sprite = possibleChoice["rock"];
+        p1.sprite = rock;
         Debug.Log("Rock button cliked");
-
+        computerAI.getUserInput(0);
     }
     public void paperButtonClick()
     {
-        p1.sprite = possibleChoice["paper"];
+        p1.sprite = paper;
         Debug.Log("Paper button cliked");
+        computerAI.getUserInput(1);
     }
     public void scissorsButtonClick()
     {
-        p1.sprite = possibleChoice["scissors"];
+        p1.sprite = scissors;
         Debug.Log("Scissors button cliked");
+        computerAI.getUserInput(2);
     }
 
     
