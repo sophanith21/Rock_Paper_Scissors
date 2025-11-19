@@ -34,7 +34,7 @@ public class ButtonHandler : MonoBehaviour
     {
         int input = 0;
         p1.sprite = rock;
-        Debug.Log("Rock button cliked");
+       
         computerAI.getUserInput(input);
         scoreSystem.getPlayerChoice(input);
     }
@@ -42,7 +42,7 @@ public class ButtonHandler : MonoBehaviour
     {
         int input = 1;
         p1.sprite = paper;
-        Debug.Log("Paper button cliked");
+
         computerAI.getUserInput(input);
         scoreSystem.getPlayerChoice(input);
     }
@@ -50,7 +50,7 @@ public class ButtonHandler : MonoBehaviour
     {
         int input = 2;
         p1.sprite = scissors;
-        Debug.Log("Scissors button cliked");
+  
         computerAI.getUserInput(input);
         scoreSystem.getPlayerChoice(input);
     }

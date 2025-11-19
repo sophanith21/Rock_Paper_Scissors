@@ -1,13 +1,17 @@
 using TMPro;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 
 public class ComputerAI : MonoBehaviour
 {
     [Header("UI Elements")]
     public Image computer;
+    public Image player;
+    public Sprite defaultSprite;
     public Sprite rock;
     public Sprite paper;
     public Sprite scissors;
@@ -21,6 +25,9 @@ public class ComputerAI : MonoBehaviour
     [Header("Score Settings")]
     public ScoreSystem scoreSystem;
     
+
+    Scene currentScene;
+    bool isShuffling = false;
     Dictionary<int,Sprite> map = new Dictionary<int, Sprite> ();
 
     // First Order Markov Model (Intended for use from turn 11 => 30)
@@ -96,6 +103,7 @@ public class ComputerAI : MonoBehaviour
         map[0] = rock;
         map[1] = paper;
         map[2] = scissors;
+        currentScene = SceneManager.GetActiveScene();
     }
 
 
@@ -107,63 +115,74 @@ public class ComputerAI : MonoBehaviour
 
     public void getUserInput(int input)
     {
+        if (isShuffling) return;
+
         currentInput = input;
         int computerChoice;
 
-        if (numTurn > 1 && numTurn < startPredictV2)
+        if (currentScene.name == "AdvancedComputerMode")
         {
-            transitionMatrixCount[prevInput][currentInput] += 1;
-            normalizedRowVector(transitionMatrixCount[prevInput], transitionMatrixProb[prevInput]);
-        }
+            if (numTurn > 1 && numTurn < startPredictV2)
+            {
+                transitionMatrixCount[prevInput][currentInput] += 1;
+                normalizedRowVector(transitionMatrixCount[prevInput], transitionMatrixProb[prevInput]);
+            }
 
-        if (numTurn > 2)
+            if (numTurn > 2)
+            {
+                transitionMatrixCount2[secondPrevInput][prevInput][currentInput] += 1;
+                normalizedRowVector(transitionMatrixCount2[secondPrevInput][prevInput], transitionMatrixProb2[secondPrevInput][prevInput]);
+            }
+
+            numTurn++;
+
+            if (numTurn == startPredictV2)
+            {
+                Debug.Log("Second Order Markov Model Activated");
+
+                // Optomize memory usage since it is no longer needed
+                transitionMatrixProb = null;
+                transitionMatrixCount = null;
+            }
+            else if (numTurn == startPredictV1)
+            {
+                Debug.Log("First Order Markov Model Activated");
+            }
+
+            if (numTurn >= startPredictV1 && numTurn < startPredictV2)
+            {
+
+                Debug.Log(string.Join(", ", transitionMatrixProb[prevInput]));
+
+                int predictedIndex = getMaxIndex(transitionMatrixProb[prevInput]);
+                computerChoice = getCounterIndex(predictedIndex);
+            }
+            else if (numTurn >= startPredictV2)
+            {
+                Debug.Log(string.Join(", ", transitionMatrixProb2[secondPrevInput][prevInput]));
+
+                int predictedIndex = getMaxIndex(transitionMatrixProb2[secondPrevInput][prevInput]);
+                computerChoice = getCounterIndex(predictedIndex);
+
+            }
+            else
+            {
+                computerChoice = UnityEngine.Random.Range(0, 3);
+            }
+
+            secondPrevInput = prevInput;
+            prevInput = currentInput;
+        }
+        else 
         {
-            transitionMatrixCount2[secondPrevInput][prevInput][currentInput] += 1;
-            normalizedRowVector(transitionMatrixCount2[secondPrevInput][prevInput], transitionMatrixProb2[secondPrevInput][prevInput]);
+            // Simple Random Choice for Basic Mode [RandomMode]
+            computerChoice = UnityEngine.Random.Range(0, 3);
+            numTurn++;
         }
         
-        numTurn ++;
+        // Start shuffling animation coroutine
+        StartCoroutine(ShuffleComputerChoice(computerChoice));
 
-        if (numTurn == startPredictV2 )
-        {
-            Debug.Log("Second Order Markov Model Activated");
-
-            // Optomize memory usage since it is no longer needed
-            transitionMatrixProb = null;
-            transitionMatrixCount = null;
-        }
-        else if (numTurn == startPredictV1)
-        {
-            Debug.Log("First Order Markov Model Activated");
-        }
-
-        if (numTurn >= startPredictV1 && numTurn < startPredictV2)
-        {
-
-            Debug.Log(string.Join(", ", transitionMatrixProb[prevInput]));
-
-            int predictedIndex = getMaxIndex(transitionMatrixProb[prevInput]);
-            computerChoice = getCounterIndex(predictedIndex);
-        }
-        else if (numTurn >= startPredictV2)
-        {
-            Debug.Log(string.Join(", ", transitionMatrixProb2[secondPrevInput][prevInput]));
-
-            int predictedIndex = getMaxIndex(transitionMatrixProb2[secondPrevInput][prevInput]);
-            computerChoice = getCounterIndex(predictedIndex);
-
-        }
-        else
-        {
-            computerChoice = UnityEngine.Random.Range(0, 3);
-        }
-
-        computer.sprite = map[computerChoice];
-        scoreSystem.getComputerChoice(computerChoice);
-
-        secondPrevInput = prevInput;
-        prevInput = currentInput;
-        turnNumber.text = "TURN " + (numTurn).ToString() ; 
     }
 
     void normalizedRowVector(float [] rowVectorCount, float [] rowVectorProb)
@@ -207,5 +226,40 @@ public class ComputerAI : MonoBehaviour
         {
             return 0;
         }
+    }
+
+    // For shuffling animation
+    IEnumerator ShuffleComputerChoice(int finalChoice, float shuffleDuration = 0.5f, float shuffleSpeed = 0.05f)
+    {
+        isShuffling = true;
+        float elapsed = 0f;
+        float timer = 0f; // Timer to control sprite change
+
+        while (elapsed < shuffleDuration)
+        {
+            elapsed += Time.deltaTime;
+            timer += Time.deltaTime;
+
+            if (timer >= shuffleSpeed)
+            {
+                // Change sprite
+                int randomChoice = UnityEngine.Random.Range(0, 3);
+                computer.sprite = map[randomChoice];
+                timer = 0f; // reset timer
+            }
+
+            yield return null; // wait for next frame
+        }
+
+        // Set the final choice
+        computer.sprite = map[finalChoice];
+        scoreSystem.getComputerChoice(finalChoice);
+
+        yield return new WaitForSeconds(1f);
+
+        computer.sprite = defaultSprite;
+        player.sprite = defaultSprite;
+        turnNumber.text = "TURN " + (numTurn).ToString();
+        isShuffling = false;
     }
 }
