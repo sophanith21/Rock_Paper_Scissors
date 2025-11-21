@@ -24,10 +24,12 @@ public class ComputerAI : MonoBehaviour
 
     [Header("Score Settings")]
     public ScoreSystem scoreSystem;
-    
+
+    [HideInInspector]
+    public bool isShuffling = false;
 
     Scene currentScene;
-    bool isShuffling = false;
+    
     Dictionary<int,Sprite> map = new Dictionary<int, Sprite> ();
 
     // First Order Markov Model (Intended for use from turn 11 => 30)
@@ -95,7 +97,8 @@ public class ComputerAI : MonoBehaviour
     int prevInput;
     int secondPrevInput;
 
-    int numTurn = 1;
+    [HideInInspector]
+    public int numTurn = 1;
 
     // Start is called before the first frame update
     void Start()
@@ -245,6 +248,7 @@ public class ComputerAI : MonoBehaviour
                 // Change sprite
                 int randomChoice = UnityEngine.Random.Range(0, 3);
                 computer.sprite = map[randomChoice];
+                SoundManager.Instance.PlayShuffle();
                 timer = 0f; // reset timer
             }
 
@@ -255,11 +259,12 @@ public class ComputerAI : MonoBehaviour
         computer.sprite = map[finalChoice];
         scoreSystem.getComputerChoice(finalChoice);
 
-        yield return new WaitForSeconds(1f);
+        // Wait for 1 second before resetting
+        yield return new WaitForSeconds(0.75f);
+        isShuffling = false;
 
         computer.sprite = defaultSprite;
         player.sprite = defaultSprite;
         turnNumber.text = "TURN " + (numTurn).ToString();
-        isShuffling = false;
     }
 }

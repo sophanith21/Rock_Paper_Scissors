@@ -4,12 +4,19 @@ using UnityEngine;
 
 public class HandleNumMode : MonoBehaviour
 {
+    [Header("UI Elements")]
     public GameObject normalPanel;
     public GameObject advancePanel;
 
-    public bool isNormal = false;
+    [HideInInspector]
+    public static bool isNormal = false;
+    public static bool isAdvance = false;
 
-    public bool isAdvance = false;
+    private void Start()
+    {
+        normalPanel.SetActive(isNormal);
+        advancePanel.SetActive(isAdvance);
+    }
 
     public void normalMode()
     {
@@ -22,6 +29,11 @@ public class HandleNumMode : MonoBehaviour
     {
         isAdvance = !isAdvance;
         advancePanel.SetActive(isAdvance);
+    }
+
+    public void credit()
+    {
+        UnityEngine.SceneManagement.SceneManager.LoadScene("Credits");
     }
 
 }

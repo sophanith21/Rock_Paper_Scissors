@@ -20,4 +20,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Winning.unity
     guid: 0f36d2e881446324b89358b7be29d98e
+  - enabled: 1
+    path: Assets/Scenes/Credits.unity
+    guid: 86644b251471cc14588053e2ce4ee333
+  - enabled: 1
+    path: Assets/Scenes/DrawScene.unity
+    guid: f10ff00b15f81804d9da24899e1e6649
   m_configObjects: {}

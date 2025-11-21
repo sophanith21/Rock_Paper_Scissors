@@ -1,47 +1,97 @@
-using System.Collections;
-using System.Collections.Generic;
+
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 using UnityEngine.SceneManagement;
 
 
 public class InputHandler : MonoBehaviour
 {
-    public InputField inputField;
-    public int targetNumber = 10;
+    [Header("UI Elements")]
+    public TMP_InputField normalInputField;
+    public TMP_InputField advancedInputField;
+    
+
+    [Header("Game Settings")]
+    public int minimumNormalRound = 10;
+    public int minimumAdvancedRound = 10;
+
+
+    TMP_Text advancedPlaceholderInput;
+    TMP_Text normalPlaceholderInput;
+
+    private void Start()
+    {
+        normalPlaceholderInput = normalInputField.placeholder.GetComponent<TMP_Text>();
+        advancedPlaceholderInput = advancedInputField.placeholder.GetComponent<TMP_Text>();
+    }
 
     public void checkNumber()
-    {
-        string userInput = inputField.text;
-        int number;
-
-        // Try to parse the string to int safely
-        if (int.TryParse(userInput, out number))
+    {    
+        if (HandleNumMode.isNormal)
         {
-            if (number > targetNumber)
+            string userInput = normalInputField.text;
+            
+            int number;
+
+            // Try to parse the string to int  
+            if (int.TryParse(userInput, out number))
             {
-                Debug.Log("Correct!");
-
-                if (targetNumber == 10)
+                number = Mathf.Min(number, 999); 
+                PlayerPrefs.SetInt("roundsToEnd", number);
+                PlayerPrefs.Save();
+                if (number >= minimumNormalRound)
                 {
-                    //to next scene Normal Mode
-                    SceneManager.LoadScene("RandomMode");
+                    Debug.Log("Correct!");
 
+                    //to next scene Normal Mode
+                    HandleNumMode.isNormal = false;
+                    SceneSwitcher.Instance.LoadScene("RandomMode");
                 }
                 else
                 {
-                    //to next scene Advance Mode
-                    SceneManager.LoadScene("AdvancedComputerMode");
+                    normalInputField.text = "";
+                    normalPlaceholderInput.text =minimumNormalRound + " or higher";
                 }
             }
             else
             {
-                Debug.Log("Wrong number!");
+                Debug.Log("Please enter a valid number!");
+            }
+
+        }
+        else if (HandleNumMode.isAdvance)
+        {
+            string userInput = advancedInputField.text;
+            int number;
+
+            if (int.TryParse(userInput, out number))
+            {
+                number = Mathf.Min(number, 999);
+                PlayerPrefs.SetInt("roundsToEnd", number);
+                PlayerPrefs.Save();
+                if (number >= minimumAdvancedRound)
+                {
+                    Debug.Log("Correct!");
+
+                    //to next scene Advance Mode
+                    HandleNumMode.isAdvance = false;
+                    SceneSwitcher.Instance.LoadScene("AdvancedComputerMode");
+                }
+                else
+                {
+                    advancedInputField.text = "";
+                    advancedPlaceholderInput.text = minimumAdvancedRound + " or higher";
+                }
+            }
+            else
+            {
+                Debug.Log("Please enter a valid number!");
             }
         }
-        else
-        {
-            Debug.Log("Please enter a valid number!");
-        }
+       
+
     }
+       
 }
+
+

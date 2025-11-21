@@ -1,11 +1,14 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ScoreSystem : MonoBehaviour
 {
+    [Header("UI Elements")]
     public TMP_Text player;
     public TMP_Text computer;
 
+    [Header("AI Settings")]
     public ComputerAI computerAI;
 
     int playerScore = 0;
@@ -13,16 +16,32 @@ public class ScoreSystem : MonoBehaviour
 
     int? playerChoice;
     int? computerChoice;
+
+    int roundsToEnd;
     // Start is called before the first frame update
     void Start()
     {
-        
+        roundsToEnd = PlayerPrefs.GetInt("roundsToEnd");
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (computerAI.numTurn > roundsToEnd && !computerAI.isShuffling)
+        {
+            if (playerScore > computerScore)
+            {
+                SceneSwitcher.Instance.LoadScene("Winning");
+            }
+            else if (computerScore > playerScore)
+            {
+                SceneSwitcher.Instance.LoadScene("GameOver");
+            }
+            else
+            {
+                SceneSwitcher.Instance.LoadScene("DrawScene");
+            }
+        }
     }
     void updateScore()
     {
@@ -33,11 +52,17 @@ public class ScoreSystem : MonoBehaviour
 
             if (playerChoice == ComputerAI.getCounterIndex(computerChoice))
             {
+                SoundManager.Instance.PlayWin();
                 playerScore++;
             }
             else if (computerChoice == ComputerAI.getCounterIndex(playerChoice))
             {
+                SoundManager.Instance.PlayLose();
                 computerScore++;
+            }
+            else
+            {
+                SoundManager.Instance.PlayDraw();
             }
 
             player.text = playerScore.ToString();

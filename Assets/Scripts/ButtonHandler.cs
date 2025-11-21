@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,10 +18,12 @@ public class ButtonHandler : MonoBehaviour
     [Header("Score Settings")]
     public ScoreSystem scoreSystem;
 
+    int roundsToEnd;
+
     // Start is called before the first frame update
     void Start()
     {
-       
+       roundsToEnd = PlayerPrefs.GetInt("roundsToEnd");
     }
 
     // Update is called once per frame
@@ -32,28 +34,47 @@ public class ButtonHandler : MonoBehaviour
 
     public void rockButtonClick()
     {
-        int input = 0;
-        p1.sprite = rock;
-       
-        computerAI.getUserInput(input);
-        scoreSystem.getPlayerChoice(input);
+        if (computerAI.numTurn <= roundsToEnd)
+        {
+            int input = 0;
+            p1.sprite = rock;
+
+            SoundManager.Instance.PlayClick();
+
+            computerAI.getUserInput(input);
+            scoreSystem.getPlayerChoice(input);
+        }
+        
     }
     public void paperButtonClick()
     {
-        int input = 1;
-        p1.sprite = paper;
+        if (computerAI.numTurn <= roundsToEnd)
+        {
+            int input = 1;
+            p1.sprite = paper;
 
-        computerAI.getUserInput(input);
-        scoreSystem.getPlayerChoice(input);
+            SoundManager.Instance.PlayClick();
+            computerAI.getUserInput(input);
+            scoreSystem.getPlayerChoice(input);
+        }
     }
     public void scissorsButtonClick()
     {
-        int input = 2;
-        p1.sprite = scissors;
-  
-        computerAI.getUserInput(input);
-        scoreSystem.getPlayerChoice(input);
+        if (computerAI.numTurn <= roundsToEnd)
+        {
+            int input = 2;
+            p1.sprite = scissors;
+
+            SoundManager.Instance.PlayClick();
+            computerAI.getUserInput(input);
+            scoreSystem.getPlayerChoice(input);
+        }
     }
 
+    public void backButtonClick()
+    {
+
+        SceneSwitcher.Instance.toMain();
+    }
     
 }
